@@ -133,6 +133,41 @@ async function run() {
       res.send({ role: result?.role });
     });
 
+    // Event Manager  Events get from database
+    app.get("/my-events", async (req, res) => {
+      try {
+        const { email } = req.query;
+        if (!email) {
+          return res
+            .status(400)
+            .send({ error: "Email query parameter is required" });
+        }
+        const result = await eventsCollection
+          .find({ "eventManager.email": email })
+          .toArray();
+
+        res.send(result);
+      } catch (error) {
+        console.error(error);
+        res.status(500).send({ error: "Failed to fetch classes" });
+      }
+    });
+
+    // Delete My  Class
+
+    app.delete("/events/:id", async (req, res) => {
+      const { id } = req.params;
+      try {
+        const result = await eventsCollection.deleteOne({
+          _id: new ObjectId(id),
+        });
+        res.send(result);
+      } catch (error) {
+        console.error(error);
+        res.status(500).send({ error: "Failed to delete class" });
+      }
+    });
+
     // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
