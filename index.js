@@ -168,6 +168,61 @@ async function run() {
       }
     });
 
+    // Get The Event Detail with  id
+
+    app.get("/events/:id", async (req, res) => {
+      const { id } = req.params;
+
+      // Validate ID
+      if (!ObjectId.isValid(id)) {
+        return res
+          .status(400)
+          .send({ success: false, message: "Invalid class ID" });
+      }
+
+      try {
+        const eventData = await eventsCollection.findOne({
+          _id: new ObjectId(id),
+        });
+
+        if (!eventData) {
+          return res
+            .status(404)
+            .send({ success: false, message: "Class not found" });
+        }
+
+        res.send(eventData);
+      } catch (error) {
+        console.error("Error fetching class data:", error);
+        res
+          .status(500)
+          .send({ success: false, message: "Failed to fetch class" });
+      }
+    });
+
+    // Class Status Updated with ID
+    app.put("/events/:id", async (req, res) => {
+      const id = req.params.id;
+      const updatedEvent = req.body;
+
+      try {
+        const result = await eventsCollection.updateOne(
+          { _id: new ObjectId(id) },
+          { $set: updatedEvent }
+        );
+        if (result.modifiedCount > 0) {
+          res.send({ success: true, message: "Event updated successfully" });
+        } else {
+          res.status(404).send({ success: false, message: "Class not found" });
+        }
+      } catch (error) {
+        console.error(error);
+        res
+          .status(500)
+          .send({ success: false, message: "Failed to update class" });
+      }
+    });
+
     // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
